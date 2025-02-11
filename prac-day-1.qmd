@@ -1,0 +1,118 @@
+---
+title: "Practical One - Week 1"
+format: html
+editor: visual
+---
+
+## Question 1
+
+```{r}
+#=============================================================#
+# Find all the rows in "airquality" that have missing values  #
+#=============================================================#
+
+airquality #Just to see the data am working with
+
+#return only incomplete rows
+missing_rows <- airquality[!complete.cases(airquality), ]
+print(missing_rows)
+```
+
+## Question 2
+
+```{r}
+#===================================================================#
+# Finding mean, sd, min, max, for each temperature and ozone level  #
+#===================================================================#
+
+#return only complete rows without NA's
+airquality_without_NA <- airquality[complete.cases(airquality), ]
+print(airquality_without_NA)
+
+#mean, sd, min, max for temperature level.
+mean(airquality_without_NA$Temp)
+sd(airquality_without_NA$Temp)
+min(airquality_without_NA$Temp)
+max(airquality_without_NA$Temp)
+
+#mean, sd, min, max for ozone level.
+mean(airquality_without_NA$Ozone)
+sd(airquality_without_NA$Ozone)
+min(airquality_without_NA$Ozone)
+max(airquality_without_NA$Ozone)
+```
+
+## Question 3
+
+```{r}
+#=============================================================================#
+# Simple Linear Regression Model to Cars data and finding betas using formula #
+#=============================================================================#
+
+
+cars #Just to see the data I am working on.
+
+#Fomula for beta (b) is b=(((X^T)(X))^-1)((X^T)(Y))
+#In cars speed is X (independent) and distance is Y (dependent on speed)
+cars_speed <- cars$speed
+x <- matrix(cars_speed, nrow = 50, ncol = 1)
+
+cars_dist <- cars$dist #extracting distance column in df
+y <- matrix(cars$dist, nrow = 50, ncol = 1) #making it a matrix
+
+n <- matrix(1, nrow = 50, ncol = 1)
+xn <- cbind(n,x)
+
+b=(solve(t(xn)%*%xn))%*%(t(xn)%*%(y))
+print(b)
+```
+
+## Question 4
+
+```{r}
+#=============================================================================#
+# Finding the beta estimates, using lm() for fitting linear regression model  #
+#=============================================================================#
+
+# Load the built-in 'cars' dataset.
+data(cars)
+
+#Fit a linear regression model.
+model <- lm(dist ~ speed, data = cars)
+summary(model)
+```
+
+Yes I get the same estimate as that formula when I use lm() function
+
+## Question 5
+
+```{r}
+#=================================================================#
+# Calculate t statistic, p values                                 #
+#=================================================================#
+y_hat <- xn %*% b
+errors <- y - y_hat
+#variance-covariance matrix
+errors_variance <- sum(errors^2)/(50-ncol(xn))
+
+variance_beta <- errors_variance * solve(t(xn)%*%xn) 
+
+# Now we extract the diagonals which are variances
+StdError_beta <- sqrt(diag(variance_beta))
+
+# t = b/se(b)
+tStat <- b/StdError_beta
+
+# 2 tail t distribution
+pvalues <- 2 * pt(-abs(tStat), df = 50 - ncol(xn))
+
+#Now we visualise the results in a table, just for better reading.
+table <- data.frame(
+  Estimate = b,
+  StdError = StdError_beta,
+  tValue = tStat,
+  pValue = pvalues
+)
+print(table)
+
+```
